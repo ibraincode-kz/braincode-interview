@@ -466,13 +466,10 @@ function initialize() {
 // JSONP REQUEST
 // =====================================================
 
-function jsonp(
-  url,
-  callback
-) {
+function jsonp(url, callback) {
 
   const callbackName =
-    "callback_" +
+    "cb_" +
     Date.now() +
     "_" +
     Math.floor(
@@ -480,47 +477,102 @@ function jsonp(
     );
 
 
+  const script =
+    document.createElement("script");
+
+
+  let finished = false;
+
+
+  const timeout =
+    setTimeout(
+      function() {
+
+        if (finished) {
+          return;
+        }
+
+        finished = true;
+
+        delete window[callbackName];
+
+        if (script.parentNode) {
+          script.remove();
+        }
+
+        showError(
+          "Сервер интервью не ответил. Обновите страницу и попробуйте снова."
+        );
+
+      },
+      15000
+    );
+
+
   window[callbackName] =
     function(data) {
 
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+
+      clearTimeout(timeout);
+
       delete window[callbackName];
 
-      script.remove();
+      if (script.parentNode) {
+        script.remove();
+      }
 
       callback(data);
 
     };
 
 
-  const script =
-    document.createElement(
-      "script"
-    );
+  const separator =
+    url.includes("?")
+      ? "&"
+      : "?";
 
 
   script.src =
     url +
-    "&callback=" +
-    callbackName;
+    separator +
+    "callback=" +
+    encodeURIComponent(
+      callbackName
+    );
 
 
   script.onerror =
     function() {
 
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+
+      clearTimeout(timeout);
+
       delete window[callbackName];
 
-      script.remove();
+      if (script.parentNode) {
+        script.remove();
+      }
 
       showError(
-        "Не удалось соединиться с сервером интервью."
+        "Не удалось загрузить данные кандидата с сервера."
       );
 
     };
 
 
-  document
-    .body
-    .appendChild(script);
+  document.body.appendChild(
+    script
+  );
 
 }
 
