@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>BrainCode Academy — Interview</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      font-family: Arial, sans-serif;
+      color: #172033;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin: 0 0 15px;
+    }
+
+    h2 {
+      font-size: 28px;
+      line-height: 1.4;
+    }
+
+    .candidate {
+      color: #687386;
+      font-size: 17px;
+      margin-bottom: 25px;
+    }
+
+    .info {
+      background: #f5f7fa;
+      border-radius: 14px;
+      padding: 20px;
+      line-height: 1.7;
+      margin: 25px 0;
+    }
+
+    .camera {
+      width: 100%;
+      background: #111827;
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 25px 0;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      max-height: 520px;
+      object-fit: cover;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 52px;
+      font-weight: 700;
+      margin: 20px 0;
+    }
+
+    .progress {
+      color: #687386;
+      margin-bottom: 10px;
+    }
+
+    .recording {
+      text-align: center;
+      padding: 12px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 16px 28px;
+      background: #172033;
+      color: white;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 18px;
+      border-radius: 12px;
+      line-height: 1.5;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+      padding: 20px;
+      border-radius: 12px;
+      line-height: 1.6;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .status {
+      color: #687386;
+      margin-top: 15px;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <!-- LOADING -->
+
+  <div
+    id="loading"
+    class="card center">
+
+    <div class="logo">
+      BrainCode Academy
+    </div>
+
+    <p>
+      Проверяем ссылку на интервью...
+    </p>
+
+  </div>
+
+
+  <!-- START -->
+
+  <div
+    id="startScreen"
+    class="card hidden">
+
+    <div class="logo">
+      BrainCode Academy
+    </div>
+
+    <h1>
+      Интервью кандидата
+    </h1>
+
+    <div
+      id="candidateName"
+      class="candidate">
+    </div>
+
+
+    <div class="info">
+
+      <strong>
+        Перед началом:
+      </strong>
+
+      <ul>
+
+        <li>
+          Разрешите доступ к камере и микрофону.
+        </li>
+
+        <li>
+          Убедитесь, что интернет работает стабильно.
+        </li>
+
+        <li>
+          На каждый вопрос будет 60 секунд.
+        </li>
+
+        <li>
+          Вопросы выбираются случайным образом.
+        </li>
+
+        <li>
+          После начала интервью остановить его нельзя.
+        </li>
+
+      </ul>
+
+    </div>
+
+
+    <div class="camera">
+
+      <video
+        id="preview"
+        autoplay
+        muted
+        playsinline>
+      </video>
+
+    </div>
+
+
+    <button
+      id="startButton">
+
+      Начать интервью
+
+    </button>
+
+
+    <div
+      id="startStatus"
+      class="status">
+    </div>
+
+  </div>
+
+
+  <!-- INTERVIEW -->
+
+  <div
+    id="interviewScreen"
+    class="card hidden">
+
+    <div class="logo">
+      BrainCode Academy
+    </div>
+
+
+    <div class="progress">
+
+      Вопрос
+      <span id="questionNumber">1</span>
+
+      из
+
+      <span id="totalQuestions">7</span>
+
+    </div>
+
+
+    <h2 id="questionText">
+      Загрузка вопроса...
+    </h2>
+
+
+    <div
+      id="timer"
+      class="timer">
+
+      01:00
+
+    </div>
+
+
+    <div class="camera">
+
+      <video
+        id="camera"
+        autoplay
+        muted
+        playsinline>
+      </video>
+
+    </div>
+
+
+    <div
+      id="recordingStatus"
+      class="recording">
+
+      🔴 Идёт запись
+
+    </div>
+
+  </div>
+
+
+  <!-- FINISH -->
+
+  <div
+    id="finishScreen"
+    class="card center hidden">
+
+    <div class="logo">
+      BrainCode Academy
+    </div>
+
+    <h1>
+      Интервью завершено
+    </h1>
+
+    <div class="success">
+
+      Спасибо!
+
+      <br><br>
+
+      Интервью успешно завершено.
+
+    </div>
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div
+    id="errorScreen"
+    class="card hidden">
+
+    <div class="logo">
+      BrainCode Academy
+    </div>
+
+    <h1>
+      Интервью недоступно
+    </h1>
+
+    <div
+      id="errorMessage"
+      class="error">
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+// =====================================================
+// НАСТРОЙКИ
+// =====================================================
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbze9bcNYxXuy9JpPeI73-bdjsGDbImcYa4aH4Y-S9noKrnGPjazpF5ZZkuNbvmKWQLP6Q/exec";
+
+
+// =====================================================
+// ПОЛУЧАЕМ ID ИЗ ССЫЛКИ
+// =====================================================
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+
+const candidateId =
+  params.get("id");
+
+
+// =====================================================
+// VARIABLES
+// =====================================================
+
+let candidateName = "";
+
+let questions = [];
+
+let currentQuestion = 0;
+
+let timeLeft = 60;
+
+let timerInterval = null;
+
+let stream = null;
+
+let recorder = null;
+
+let recordedChunks = [];
+
+
+// =====================================================
+// START
+// =====================================================
+
+window.addEventListener(
+  "load",
+  initialize
+);
+
+
+// =====================================================
+// INITIALIZE
+// =====================================================
+
+function initialize() {
+
+  if (!candidateId) {
+
+    showError(
+      "В ссылке отсутствует ID кандидата."
+    );
+
+    return;
+  }
+
+
+  apiGetCandidate();
+
+}
+
+
+// =====================================================
+// JSONP REQUEST
+// =====================================================
+
+function jsonp(
+  url,
+  callback
+) {
+
+  const callbackName =
+    "callback_" +
+    Date.now() +
+    "_" +
+    Math.floor(
+      Math.random() * 100000
+    );
+
+
+  window[callbackName] =
+    function(data) {
+
+      delete window[callbackName];
+
+      script.remove();
+
+      callback(data);
+
+    };
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  script.src =
+    url +
+    "&callback=" +
+    callbackName;
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+      showError(
+        "Не удалось соединиться с сервером интервью."
+      );
+
+    };
+
+
+  document
+    .body
+    .appendChild(script);
+
+}
+
+
+// =====================================================
+// GET CANDIDATE
+// =====================================================
+
+function apiGetCandidate() {
+
+  const url =
+    API_URL +
+    "?action=candidate&id=" +
+    encodeURIComponent(
+      candidateId
+    );
+
+
+  jsonp(
+    url,
+    function(data) {
+
+      if (!data.success) {
+
+        showError(
+          data.error
+        );
+
+        return;
+      }
+
+
+      candidateName =
+        data.name;
+
+
+      document
+        .getElementById(
+          "candidateName"
+        )
+        .innerText =
+          "Кандидат: " +
+          candidateName;
+
+
+      document
+        .getElementById(
+          "loading"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+
+      document
+        .getElementById(
+          "startScreen"
+        )
+        .classList.remove(
+          "hidden"
+        );
+
+
+      requestCamera();
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// CAMERA
+// =====================================================
+
+async function requestCamera() {
+
+  try {
+
+    stream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          video: {
+            width: {
+              ideal: 1280
+            },
+
+            height: {
+              ideal: 720
+            },
+
+            facingMode:
+              "user"
+
+          },
+
+          audio: true
+
+        });
+
+
+    document
+      .getElementById(
+        "preview"
+      )
+      .srcObject =
+        stream;
+
+
+    document
+      .getElementById(
+        "startStatus"
+      )
+      .innerText =
+        "Камера и микрофон готовы.";
+
+
+  }
+
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+
+    showError(
+      "Не удалось получить доступ к камере или микрофону. " +
+      "Разрешите доступ в настройках браузера и обновите страницу."
+    );
+
+  }
+
+}
+
+
+// =====================================================
+// START BUTTON
+// =====================================================
+
+document
+  .getElementById(
+    "startButton"
+  )
+  .addEventListener(
+    "click",
+    startInterview
+  );
+
+
+// =====================================================
+// START INTERVIEW
+// =====================================================
+
+function startInterview() {
+
+  if (!stream) {
+
+    showError(
+      "Камера и микрофон ещё не готовы."
+    );
+
+    return;
+  }
+
+
+  const button =
+    document.getElementById(
+      "startButton"
+    );
+
+
+  button.disabled =
+    true;
+
+
+  button.innerText =
+    "Запускаем интервью...";
+
+
+  const url =
+    API_URL +
+    "?action=start&id=" +
+    encodeURIComponent(
+      candidateId
+    );
+
+
+  jsonp(
+    url,
+    function(data) {
+
+      if (!data.success) {
+
+        showError(
+          data.error
+        );
+
+        return;
+      }
+
+
+      questions =
+        data.questions;
+
+
+      document
+        .getElementById(
+          "startScreen"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+
+      document
+        .getElementById(
+          "interviewScreen"
+        )
+        .classList.remove(
+          "hidden"
+        );
+
+
+      document
+        .getElementById(
+          "camera"
+        )
+        .srcObject =
+          stream;
+
+
+      document
+        .getElementById(
+          "totalQuestions"
+        )
+        .innerText =
+          questions.length;
+
+
+      currentQuestion =
+        0;
+
+
+      showQuestion();
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// SHOW QUESTION
+// =====================================================
+
+function showQuestion() {
+
+  if (
+    currentQuestion >=
+    questions.length
+  ) {
+
+    finishInterview();
+
+    return;
+  }
+
+
+  const question =
+    questions[
+      currentQuestion
+    ];
+
+
+  document
+    .getElementById(
+      "questionNumber"
+    )
+    .innerText =
+      currentQuestion + 1;
+
+
+  document
+    .getElementById(
+      "questionText"
+    )
+    .innerText =
+      question.question;
+
+
+  startRecording();
+
+
+  startTimer();
+
+}
+
+
+// =====================================================
+// TIMER
+// =====================================================
+
+function startTimer() {
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  timeLeft =
+    60;
+
+
+  updateTimer();
+
+
+  timerInterval =
+    setInterval(
+      function() {
+
+        timeLeft--;
+
+        updateTimer();
+
+
+        if (
+          timeLeft <= 0
+        ) {
+
+          clearInterval(
+            timerInterval
+          );
+
+          finishQuestion();
+
+        }
+
+      },
+      1000
+    );
+
+}
+
+
+// =====================================================
+// TIMER DISPLAY
+// =====================================================
+
+function updateTimer() {
+
+  const minutes =
+    Math.floor(
+      timeLeft / 60
+    );
+
+
+  const seconds =
+    timeLeft % 60;
+
+
+  document
+    .getElementById(
+      "timer"
+    )
+    .innerText =
+
+      String(minutes)
+        .padStart(
+          2,
+          "0"
+        )
+
+      +
+
+      ":"
+
+      +
+
+      String(seconds)
+        .padStart(
+          2,
+          "0"
+        );
+
+}
+
+
+// =====================================================
+// RECORDING
+// =====================================================
+
+function startRecording() {
+
+  recordedChunks = [];
+
+
+  let options = {
+    mimeType:
+      "video/webm;codecs=vp8,opus"
+  };
+
+
+  if (
+    !MediaRecorder.isTypeSupported(
+      options.mimeType
+    )
+  ) {
+
+    options = {
+      mimeType:
+        "video/webm"
+    };
+
+  }
+
+
+  try {
+
+    recorder =
+      new MediaRecorder(
+        stream,
+        options
+      );
+
+  }
+
+  catch(error) {
+
+    recorder =
+      new MediaRecorder(
+        stream
+      );
+
+  }
+
+
+  recorder.ondataavailable =
+    function(event) {
+
+      if (
+        event.data &&
+        event.data.size > 0
+      ) {
+
+        recordedChunks.push(
+          event.data
+        );
+
+      }
+
+    };
+
+
+  recorder.start();
+
+
+  document
+    .getElementById(
+      "recordingStatus"
+    )
+    .innerText =
+      "🔴 Идёт запись ответа";
+
+}
+
+
+// =====================================================
+// FINISH QUESTION
+// =====================================================
+
+function finishQuestion() {
+
+  if (
+    recorder &&
+    recorder.state !==
+      "inactive"
+  ) {
+
+    recorder.stop();
+
+  }
+
+
+  document
+    .getElementById(
+      "recordingStatus"
+    )
+    .innerText =
+      "⏳ Ответ сохранён. Следующий вопрос...";
+
+
+  setTimeout(
+    function() {
+
+      nextQuestion();
+
+    },
+    500
+  );
+
+}
+
+
+// =====================================================
+// NEXT QUESTION
+// =====================================================
+
+function nextQuestion() {
+
+  currentQuestion++;
+
+
+  if (
+    currentQuestion >=
+    questions.length
+  ) {
+
+    finishInterview();
+
+    return;
+  }
+
+
+  showQuestion();
+
+}
+
+
+// =====================================================
+// FINISH
+// =====================================================
+
+function finishInterview() {
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  if (
+    recorder &&
+    recorder.state !==
+      "inactive"
+  ) {
+
+    recorder.stop();
+
+  }
+
+
+  if (stream) {
+
+    stream
+      .getTracks()
+      .forEach(
+        function(track) {
+
+          track.stop();
+
+        }
+      );
+
+  }
+
+
+  document
+    .getElementById(
+      "interviewScreen"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "finishScreen"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+}
+
+
+// =====================================================
+// ERROR
+// =====================================================
+
+function showError(
+  message
+) {
+
+  document
+    .getElementById(
+      "loading"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "startScreen"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "interviewScreen"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "errorScreen"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "errorMessage"
+    )
+    .innerText =
+      message;
+
+}
+
+</script>
+
+
+</body>
+
+</html>
