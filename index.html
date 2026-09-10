@@ -873,7 +873,7 @@ function startTimer() {
             timerInterval
           );
 
-          finishQuestion();
+          );
 
         }
 
@@ -1010,50 +1010,269 @@ function startRecording() {
 // FINISH QUESTION
 // =====================================================
 
-function finishQuestion() {
+async function finishQuestion() {
 
-  // Останавливаем таймер
-  clearInterval(timerInterval);
-
-  // Блокируем кнопку, чтобы нельзя было нажать несколько раз
+  // Не даём сработать повторно
   const button =
     document.getElementById(
       "finishAnswerButton"
     );
 
-  button.disabled = true;
-
-  // Останавливаем запись
-  if (
-    recorder &&
-    recorder.state !== "inactive"
-  ) {
-
-    recorder.stop();
-
+  if (button.disabled) {
+    return;
   }
 
-  // Меняем статус
+  button.disabled = true;
+  button.innerText = "Сохраняем ответ...";
+
+  // Останавливаем таймер
+  clearInterval(timerInterval);
+
+
+  // Проверяем запись
+  if (
+    !recorder ||
+    recorder.state === "inactive"
+  ) {
+
+    showError(
+      "Не удалось сохранить запись ответа."
+    );
+
+    return;
+  }
+
+
   document
     .getElementById(
       "recordingStatus"
     )
     .innerText =
-      "⏳ Ответ сохранён. Следующий вопрос...";
+      "⏳ Сохраняем ответ...";
 
-  // Небольшая пауза перед следующим вопросом
-  setTimeout(
-    function() {
 
-      nextQuestion();
+  // Ждём полной остановки MediaRecorder
+  recorder.onstop =
+    async function() {
 
-    },
-    500
+      try {
+
+        // Создаём видео из записанных частей
+        const blob =
+          new Blob(
+            recordedChunks,
+            {
+              type:
+                recorder.mimeType ||
+                "video/webm"
+            }
+          );
+
+
+        if (blob.size === 0) {
+
+          throw new Error(
+            "Запись видео пустая."
+          );
+
+        }
+
+
+        // Преобразуем Blob в Base64
+        const videoData =
+          await blobToDataURL(
+            blob
+          );
+
+
+        const question =
+          questions[
+            currentQuestion
+          ];
+
+
+        // Отправляем ответ на сервер
+        const result =
+          await apiPost({
+            action: "saveAnswer",
+
+            candidateId:
+              candidateId,
+
+            questionNumber:
+              currentQuestion + 1,
+
+            questionText:
+              question.question,
+
+            videoData:
+              videoData
+          });
+
+
+        if (
+          !result ||
+          !result.success
+        ) {
+
+          throw new Error(
+            result &&
+            result.error
+              ? result.error
+              : "Ошибка сохранения ответа."
+          );
+
+        }
+
+
+        document
+          .getElementById(
+            "recordingStatus"
+          )
+          .innerText =
+            "✅ Ответ сохранён";
+
+
+        button.innerText =
+          "Завершить ответ";
+
+
+        // Только после успешного сохранения
+        // переходим к следующему вопросу
+        setTimeout(
+          function() {
+
+            nextQuestion();
+
+          },
+          500
+        );
+
+      }
+
+      catch(error) {
+
+        console.error(
+          error
+        );
+
+
+        button.disabled =
+          false;
+
+
+        button.innerText =
+          "Повторить сохранение";
+
+
+        document
+          .getElementById(
+            "recordingStatus"
+          )
+          .innerText =
+            "❌ Не удалось сохранить ответ";
+
+
+        alert(
+          "Не удалось сохранить ответ.\n\n" +
+          error.message +
+          "\n\nНажмите «Повторить сохранение»."
+        );
+
+      }
+
+    };
+
+
+  // Останавливаем MediaRecorder.
+  // После этого сработает recorder.onstop выше.
+  recorder.stop();
+
+}
+
+// =====================================================
+// BLOB → BASE64
+// =====================================================
+
+function blobToDataURL(blob) {
+
+  return new Promise(
+    function(resolve, reject) {
+
+      const reader =
+        new FileReader();
+
+
+      reader.onloadend =
+        function() {
+
+          resolve(
+            reader.result
+          );
+
+        };
+
+
+      reader.onerror =
+        function() {
+
+          reject(
+            new Error(
+              "Не удалось обработать видео."
+            )
+          );
+
+        };
+
+
+      reader.readAsDataURL(
+        blob
+      );
+
+    }
   );
 
 }
 
 
+// =====================================================
+// POST REQUEST
+// =====================================================
+
+async function apiPost(data) {
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:
+          JSON.stringify(
+            data
+          )
+      }
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Ошибка соединения с сервером."
+    );
+
+  }
+
+
+  return await response.json();
+
+}
 // =====================================================
 // NEXT QUESTION
 // =====================================================
@@ -1083,17 +1302,17 @@ function nextQuestion() {
 // FINISH
 // =====================================================
 
-function finishInterview() {
+async function finishInterview() {
 
   clearInterval(
     timerInterval
   );
 
 
+  // На всякий случай останавливаем запись
   if (
     recorder &&
-    recorder.state !==
-      "inactive"
+    recorder.state !== "inactive"
   ) {
 
     recorder.stop();
@@ -1101,37 +1320,88 @@ function finishInterview() {
   }
 
 
-  if (stream) {
+  document
+    .getElementById(
+      "recordingStatus"
+    )
+    .innerText =
+      "⏳ Завершаем интервью...";
 
-    stream
-      .getTracks()
-      .forEach(
-        function(track) {
 
-          track.stop();
+  try {
 
-        }
+    // Сообщаем серверу,
+    // что интервью полностью завершено
+    const result =
+      await apiPost({
+        action:
+          "finishInterview",
+
+        candidateId:
+          candidateId
+      });
+
+
+    if (
+      !result ||
+      !result.success
+    ) {
+
+      throw new Error(
+        "Не удалось завершить интервью."
+      );
+
+    }
+
+
+    // Выключаем камеру и микрофон
+    if (stream) {
+
+      stream
+        .getTracks()
+        .forEach(
+          function(track) {
+
+            track.stop();
+
+          }
+        );
+
+    }
+
+
+    document
+      .getElementById(
+        "interviewScreen"
+      )
+      .classList.add(
+        "hidden"
+      );
+
+
+    document
+      .getElementById(
+        "finishScreen"
+      )
+      .classList.remove(
+        "hidden"
       );
 
   }
 
+  catch(error) {
 
-  document
-    .getElementById(
-      "interviewScreen"
-    )
-    .classList.add(
-      "hidden"
+    console.error(
+      error
     );
 
 
-  document
-    .getElementById(
-      "finishScreen"
-    )
-    .classList.remove(
-      "hidden"
+    showError(
+      "Ответы сохранены, но возникла ошибка при завершении интервью: " +
+      error.message
     );
+
+  }
 
 }
 
