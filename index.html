@@ -313,10 +313,15 @@
       id="recordingStatus"
       class="recording">
 
-      🔴 Идёт запись
+      🔴 Идёт запись ответа
 
     </div>
+<button
+  id="finishAnswerButton"
+  type="button">
 
+  Завершить ответ
+</button>
   </div>
 
 
@@ -658,7 +663,15 @@ document
     "click",
     startInterview
   );
-
+  
+document
+  .getElementById(
+    "finishAnswerButton"
+  )
+  .addEventListener(
+    "click",
+    finishQuestion
+  );
 
 // =====================================================
 // START INTERVIEW
@@ -784,6 +797,14 @@ function showQuestion() {
       currentQuestion
     ];
 
+  const finishButton =
+  document.getElementById(
+    "finishAnswerButton"
+  );
+
+finishButton.disabled = false;
+finishButton.innerText =
+  "Завершить ответ";
 
   document
     .getElementById(
@@ -983,17 +1004,28 @@ function startRecording() {
 
 function finishQuestion() {
 
+  // Останавливаем таймер
+  clearInterval(timerInterval);
+
+  // Блокируем кнопку, чтобы нельзя было нажать несколько раз
+  const button =
+    document.getElementById(
+      "finishAnswerButton"
+    );
+
+  button.disabled = true;
+
+  // Останавливаем запись
   if (
     recorder &&
-    recorder.state !==
-      "inactive"
+    recorder.state !== "inactive"
   ) {
 
     recorder.stop();
 
   }
 
-
+  // Меняем статус
   document
     .getElementById(
       "recordingStatus"
@@ -1001,7 +1033,7 @@ function finishQuestion() {
     .innerText =
       "⏳ Ответ сохранён. Следующий вопрос...";
 
-
+  // Небольшая пауза перед следующим вопросом
   setTimeout(
     function() {
 
