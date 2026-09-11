@@ -9,7 +9,7 @@
 
 const CONFIG = {
   // URL Web App из Google Apps Script (заканчивается на /exec)
-  API_URL: "PUT_APPS_SCRIPT_WEB_APP_URL_HERE",
+  API_URL: "https://script.google.com/macros/s/AKfycbzT3FvlLLbxaWr2q8H6mEcNBCku53gdVjFgEiU68FP2QH7Q0gG1jMPoXc7R8wXvC_9q5Q/exec",
 
   ANSWER_TIME_SECONDS: 60,
   // 0 = запись стартует сразу вместе с показом вопроса (кандидат не успевает
