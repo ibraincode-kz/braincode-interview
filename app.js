@@ -9,10 +9,12 @@
 
 const CONFIG = {
   // URL Web App из Google Apps Script (заканчивается на /exec)
-  API_URL: "https://script.google.com/macros/s/AKfycbzT3FvlLLbxaWr2q8H6mEcNBCku53gdVjFgEiU68FP2QH7Q0gG1jMPoXc7R8wXvC_9q5Q/exec",
+  API_URL: "PUT_APPS_SCRIPT_WEB_APP_URL_HERE",
 
   ANSWER_TIME_SECONDS: 60,
-  PREPARATION_TIME_SECONDS: 5,
+  // 0 = запись стартует сразу вместе с показом вопроса (кандидат не успевает
+  // подготовить ответ через ИИ). Поставьте 3-5, если нужна пауза на подготовку.
+  PREPARATION_TIME_SECONDS: 0,
   API_TIMEOUT_MS: 15000,
 
   // Загрузка видео
@@ -34,7 +36,7 @@ const CONFIG = {
     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
   },
 
-  DEBUG: false
+  DEBUG: true
 };
 
 /* Вопросы интервью. Текст можно свободно менять — порядок = номер вопроса. */
@@ -153,6 +155,7 @@ function setScreen(name) {
   // камера
   show("cameraPanel", CAMERA_SCREENS.indexOf(name) !== -1 && !!state.stream);
   show("camBadge", name === "recording");
+  show("recTimer", name === "recording");
 
   // внутренние блоки экрана интервью
   show("prepBlock", name === "preparation");
@@ -730,9 +733,13 @@ function renderCandidateInfo() {
     state.currentQuestion = 0;
   }
 
+  const hasPrep = CONFIG.PREPARATION_TIME_SECONDS > 0;
   setText("prepSecondsHint", String(CONFIG.PREPARATION_TIME_SECONDS));
   setText("answerSecondsHint", String(CONFIG.ANSWER_TIME_SECONDS));
   setText("answerSecondsInfo", String(CONFIG.ANSWER_TIME_SECONDS));
+  show("prepInfoLine", hasPrep);
+  show("noPrepInfoLine", !hasPrep);
+  show("prepHintLine", hasPrep);
   $("btnStart").disabled = false;
   setScreen("candidate-info");
 }
@@ -831,8 +838,15 @@ function goToQuestion(number) {
 
 function startPreparation() {
   clearAllTimers();
-  setScreen("preparation");
 
+  // Подготовка отключена -> вопрос и запись появляются одновременно.
+  if (!CONFIG.PREPARATION_TIME_SECONDS || CONFIG.PREPARATION_TIME_SECONDS <= 0) {
+    log("preparation skipped (PREPARATION_TIME_SECONDS = 0)");
+    startRecording();
+    return;
+  }
+
+  setScreen("preparation");
   $("btnSkipPrep").disabled = false;
 
   let left = CONFIG.PREPARATION_TIME_SECONDS;

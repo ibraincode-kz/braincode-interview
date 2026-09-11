@@ -26,6 +26,7 @@
       <div class="camera" id="cameraPanel" hidden>
         <video id="preview" autoplay muted playsinline></video>
         <div class="camera__badge" id="camBadge" hidden><span class="dot"></span><span id="camBadgeText">Идёт запись</span></div>
+        <div class="camera__timer" id="recTimer" hidden>00:60</div>
       </div>
 
       <!-- STATE: loading -->
@@ -60,7 +61,8 @@
         <p class="text muted" id="candidateCourse" hidden></p>
         <ul class="list">
           <li>Интервью состоит из <b>5 вопросов</b>.</li>
-          <li>Перед каждым вопросом будет время на подготовку.</li>
+          <li id="prepInfoLine" hidden>Перед каждым вопросом будет время на подготовку.</li>
+          <li id="noPrepInfoLine"><b>Вопрос появляется и запись начинается сразу</b> — времени на подготовку нет.</li>
           <li>На ответ даётся до <b id="answerSecondsInfo">60</b> секунд.</li>
           <li>Вы можете завершить ответ раньше.</li>
           <li>Понадобится доступ к камере и микрофону.</li>
@@ -83,8 +85,9 @@
         <h1 class="title">Камера и микрофон готовы</h1>
         <p class="text">Проверьте изображение выше. Убедитесь, что вас хорошо видно и слышно, а вокруг тихо.</p>
         <ul class="list">
-          <li>Вопрос 1 из 5 начнётся сразу после нажатия кнопки.</li>
-          <li>Перед записью будет <b id="prepSecondsHint">5</b> секунд на подготовку.</li>
+          <li><b>Первый вопрос и запись начнутся сразу после нажатия кнопки.</b></li>
+          <li id="prepHintLine" hidden>Перед записью будет <b id="prepSecondsHint">5</b> секунд на подготовку.</li>
+          <li>Отвечайте своими словами — это живое интервью, а не тест.</li>
           <li>Запись ответа остановится автоматически через <b id="answerSecondsHint">60</b> секунд.</li>
           <li>Не перезагружайте страницу во время интервью.</li>
         </ul>
@@ -112,10 +115,8 @@
 
         <!-- recording -->
         <div class="block" id="recBlock" hidden>
-          <div class="rec-status"><span class="dot"></span> Идёт запись</div>
-          <p class="text muted small">Осталось:</p>
-          <div class="timer" id="recTimer">00:60</div>
           <button class="btn btn--primary btn--lg btn--finish" id="btnFinishAnswer" type="button">Завершить ответ</button>
+          <p class="text muted small">Нажмите, когда закончите — ждать таймер не обязательно.</p>
         </div>
 
         <!-- saving -->
