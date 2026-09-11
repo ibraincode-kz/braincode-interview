@@ -34,7 +34,7 @@ const CONFIG = {
     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
   },
 
-  DEBUG: true
+  DEBUG: false
 };
 
 /* Вопросы интервью. Текст можно свободно менять — порядок = номер вопроса. */
