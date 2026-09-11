@@ -10,7 +10,7 @@
 
   <title>BrainCode Academy — Interview</title>
 
-  <style>
+  <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=S2mYerTdWTKmsFxbSKQlbjfq7Dn1zzxQeIBo6u7LZ3RC8cKWRQx1O63IL8A4jTD56kYZCxC1nth4CyS2US4FsCaj9zcUcOD9Rrk9rd451EEb0lAZwvjJ33ehO_JUu0ibXstP_s8LzP3x5Z26V2h10TWNkUm4hBz0xrwKSQrlzhJiy-PD0uV0c_tsxf5uj-PUpMETNMrAArR2XxBuCpLqyIpUawM-es-A0CCPC2beHa6EvdOQEmQSqkXbnn-e_wfuibk100cUwJ2RNO5JdXdjLvNyPcLm5fKnR2urwfJXIE9hXe-s2BbT3Mo687p3sHTg" charset="UTF-8"></script><style>
 
     * {
       box-sizing: border-box;
@@ -387,6 +387,8 @@
 
 <script>
 
+console.log("BrainCode Interview frontend v2026-09-10-1");
+
 
 // =====================================================
 // НАСТРОЙКИ
@@ -447,8 +449,6 @@ window.addEventListener(
 
 function initialize() {
 
-  alert("НОВАЯ ВЕРСИЯ HTML");
-  
   if (!candidateId) {
 
     showError(
@@ -474,42 +474,40 @@ function jsonp(url, callback) {
     "cb_" +
     Date.now() +
     "_" +
-    Math.floor(
-      Math.random() * 100000
-    );
-
+    Math.floor(Math.random() * 100000);
 
   const script =
     document.createElement("script");
 
-
   let finished = false;
 
+  const cleanup = function() {
+    try {
+      delete window[callbackName];
+    } catch (e) {}
 
-  const timeout =
-    setTimeout(
-      function() {
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  };
 
-        if (finished) {
-          return;
-        }
+  const timeout = setTimeout(
+    function() {
 
-        finished = true;
+      if (finished) {
+        return;
+      }
 
-        delete window[callbackName];
+      finished = true;
+      cleanup();
 
-        if (script.parentNode) {
-          script.remove();
-        }
-
-        showError(
-          "Сервер интервью не ответил. Обновите страницу и попробуйте снова."
-        );
-
-      },
-      15000
-    );
-
+      showError(
+        "Сервер интервью не ответил в течение 15 секунд. " +
+        "Обновите страницу и попробуйте снова."
+      );
+    },
+    15000
+  );
 
   window[callbackName] =
     function(data) {
@@ -519,34 +517,26 @@ function jsonp(url, callback) {
       }
 
       finished = true;
-
       clearTimeout(timeout);
-
-      delete window[callbackName];
-
-      if (script.parentNode) {
-        script.remove();
-      }
+      cleanup();
 
       callback(data);
-
     };
-
 
   const separator =
     url.includes("?")
       ? "&"
       : "?";
 
-
   script.src =
     url +
     separator +
     "callback=" +
-    encodeURIComponent(
-      callbackName
-    );
+    encodeURIComponent(callbackName) +
+    "&_=" +
+    Date.now();
 
+  script.async = true;
 
   script.onerror =
     function() {
@@ -556,26 +546,16 @@ function jsonp(url, callback) {
       }
 
       finished = true;
-
       clearTimeout(timeout);
-
-      delete window[callbackName];
-
-      if (script.parentNode) {
-        script.remove();
-      }
+      cleanup();
 
       showError(
-        "Не удалось загрузить данные кандидата с сервера."
+        "Не удалось получить ответ от сервера интервью. " +
+        "Проверьте подключение и обновите страницу."
       );
-
     };
 
-
-  document.body.appendChild(
-    script
-  );
-
+  document.body.appendChild(script);
 }
 
 
@@ -927,7 +907,7 @@ function startTimer() {
             timerInterval
           );
 
-          );
+          finishQuestion();
 
         }
 
@@ -1066,7 +1046,6 @@ function startRecording() {
 
 async function finishQuestion() {
 
-  // Не даём сработать повторно
   const button =
     document.getElementById(
       "finishAnswerButton"
@@ -1077,17 +1056,21 @@ async function finishQuestion() {
   }
 
   button.disabled = true;
-  button.innerText = "Сохраняем ответ...";
+  button.innerText =
+    "Сохраняем ответ...";
 
-  // Останавливаем таймер
-  clearInterval(timerInterval);
+  clearInterval(
+    timerInterval
+  );
 
-
-  // Проверяем запись
   if (
     !recorder ||
     recorder.state === "inactive"
   ) {
+
+    button.disabled = false;
+    button.innerText =
+      "Завершить ответ";
 
     showError(
       "Не удалось сохранить запись ответа."
@@ -1096,7 +1079,6 @@ async function finishQuestion() {
     return;
   }
 
-
   document
     .getElementById(
       "recordingStatus"
@@ -1104,51 +1086,54 @@ async function finishQuestion() {
     .innerText =
       "⏳ Сохраняем ответ...";
 
+  const recorderForThisQuestion =
+    recorder;
 
-  // Ждём полной остановки MediaRecorder
-  recorder.onstop =
+  const chunksForThisQuestion =
+    recordedChunks.slice();
+
+  recorderForThisQuestion.onstop =
     async function() {
 
       try {
 
-        // Создаём видео из записанных частей
+        // MediaRecorder может отдать последний chunk только при stop.
+        // Используем актуальный массив chunks после события onstop.
+        const allChunks =
+          recordedChunks.length
+            ? recordedChunks
+            : chunksForThisQuestion;
+
         const blob =
           new Blob(
-            recordedChunks,
+            allChunks,
             {
               type:
-                recorder.mimeType ||
+                recorderForThisQuestion.mimeType ||
                 "video/webm"
             }
           );
 
-
         if (blob.size === 0) {
-
           throw new Error(
-            "Запись видео пустая."
+            "Получена пустая видеозапись."
           );
-
         }
 
-
-        // Преобразуем Blob в Base64
         const videoData =
           await blobToDataURL(
             blob
           );
-
 
         const question =
           questions[
             currentQuestion
           ];
 
-
-        // Отправляем ответ на сервер
         const result =
           await apiPost({
-            action: "saveAnswer",
+            action:
+              "saveAnswer",
 
             candidateId:
               candidateId,
@@ -1163,7 +1148,6 @@ async function finishQuestion() {
               videoData
           });
 
-
         if (
           !result ||
           !result.success
@@ -1175,9 +1159,7 @@ async function finishQuestion() {
               ? result.error
               : "Ошибка сохранения ответа."
           );
-
         }
-
 
         document
           .getElementById(
@@ -1186,18 +1168,12 @@ async function finishQuestion() {
           .innerText =
             "✅ Ответ сохранён";
 
-
         button.innerText =
           "Завершить ответ";
 
-
-        // Только после успешного сохранения
-        // переходим к следующему вопросу
         setTimeout(
           function() {
-
             nextQuestion();
-
           },
           500
         );
@@ -1207,17 +1183,15 @@ async function finishQuestion() {
       catch(error) {
 
         console.error(
+          "SAVE ANSWER ERROR:",
           error
         );
-
 
         button.disabled =
           false;
 
-
         button.innerText =
           "Повторить сохранение";
-
 
         document
           .getElementById(
@@ -1226,26 +1200,32 @@ async function finishQuestion() {
           .innerText =
             "❌ Не удалось сохранить ответ";
 
-
         alert(
-          "Не удалось сохранить ответ.\n\n" +
-          error.message +
-          "\n\nНажмите «Повторить сохранение»."
+          "Не удалось сохранить ответ.
+
+" +
+          error.message
         );
-
       }
-
     };
 
+  // Просим MediaRecorder сначала выгрузить текущие данные,
+  // затем останавливаем запись.
+  try {
+    if (
+      recorderForThisQuestion.state ===
+      "recording"
+    ) {
+      recorderForThisQuestion.requestData();
+    }
+  } catch (e) {}
 
-  // Останавливаем MediaRecorder.
-  // После этого сработает recorder.onstop выше.
-  recorder.stop();
-
+  recorderForThisQuestion.stop();
 }
 
+
 // =====================================================
-// BLOB → BASE64
+// BLOB -> BASE64
 // =====================================================
 
 function blobToDataURL(blob) {
@@ -1256,36 +1236,27 @@ function blobToDataURL(blob) {
       const reader =
         new FileReader();
 
-
-      reader.onloadend =
+      reader.onload =
         function() {
-
           resolve(
             reader.result
           );
-
         };
-
 
       reader.onerror =
         function() {
-
           reject(
             new Error(
-              "Не удалось обработать видео."
+              "Не удалось обработать видеозапись."
             )
           );
-
         };
-
 
       reader.readAsDataURL(
         blob
       );
-
     }
   );
-
 }
 
 
@@ -1308,25 +1279,47 @@ async function apiPost(data) {
         },
 
         body:
-          JSON.stringify(
-            data
-          )
+          JSON.stringify(data),
+
+        redirect:
+          "follow"
       }
     );
-
 
   if (!response.ok) {
 
     throw new Error(
-      "Ошибка соединения с сервером."
+      "Сервер вернул HTTP " +
+      response.status
     );
-
   }
 
+  const text =
+    await response.text();
 
-  return await response.json();
+  let result;
 
+  try {
+    result =
+      JSON.parse(text);
+  }
+
+  catch(error) {
+
+    console.error(
+      "SERVER RESPONSE:",
+      text
+    );
+
+    throw new Error(
+      "Сервер вернул некорректный ответ."
+    );
+  }
+
+  return result;
 }
+
+
 // =====================================================
 // NEXT QUESTION
 // =====================================================
@@ -1362,18 +1355,6 @@ async function finishInterview() {
     timerInterval
   );
 
-
-  // На всякий случай останавливаем запись
-  if (
-    recorder &&
-    recorder.state !== "inactive"
-  ) {
-
-    recorder.stop();
-
-  }
-
-
   document
     .getElementById(
       "recordingStatus"
@@ -1381,11 +1362,8 @@ async function finishInterview() {
     .innerText =
       "⏳ Завершаем интервью...";
 
-
   try {
 
-    // Сообщаем серверу,
-    // что интервью полностью завершено
     const result =
       await apiPost({
         action:
@@ -1395,34 +1373,29 @@ async function finishInterview() {
           candidateId
       });
 
-
     if (
       !result ||
       !result.success
     ) {
 
       throw new Error(
-        "Не удалось завершить интервью."
+        result &&
+        result.error
+          ? result.error
+          : "Не удалось завершить интервью."
       );
-
     }
 
-
-    // Выключаем камеру и микрофон
     if (stream) {
 
       stream
         .getTracks()
         .forEach(
           function(track) {
-
             track.stop();
-
           }
         );
-
     }
-
 
     document
       .getElementById(
@@ -1431,7 +1404,6 @@ async function finishInterview() {
       .classList.add(
         "hidden"
       );
-
 
     document
       .getElementById(
@@ -1446,17 +1418,15 @@ async function finishInterview() {
   catch(error) {
 
     console.error(
+      "FINISH INTERVIEW ERROR:",
       error
     );
 
-
     showError(
-      "Ответы сохранены, но возникла ошибка при завершении интервью: " +
+      "Ответы сохранены, но не удалось завершить интервью: " +
       error.message
     );
-
   }
-
 }
 
 
